@@ -15,11 +15,11 @@ import androidx.core.content.res.ResourcesCompat;
 
 public class EditTextWithClear extends AppCompatEditText {
 
-    Drawable mClearButtonImage;
+    Drawable clearButtonIcon;
 
     private void init() {
-        mClearButtonImage = ResourcesCompat.getDrawable
-                (getResources(), R.drawable.baseline_close_24,null);
+        clearButtonIcon = ResourcesCompat.getDrawable(getResources(),
+                R.drawable.baseline_close_transparent_24, null);
         addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -40,20 +40,38 @@ public class EditTextWithClear extends AppCompatEditText {
         setOnTouchListener(new OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if (getCompoundDrawablesRelative()[2] != null){
-                    float clearButtonStart =
-                            (getWidth()-getPaddingEnd()-mClearButtonImage.getIntrinsicWidth());
-                    boolean isClearButtonClicked = false;
-                    if (event.getX() > clearButtonStart) {
-                        isClearButtonClicked = true;
+                if (getCompoundDrawablesRelative()[2] != null) {
+
+                    boolean isButtonClicked = false;
+                    // LTR
+                    if (getLayoutDirection() == View.LAYOUT_DIRECTION_LTR) {
+                        final float clearButtonStartPosition = (getWidth()-getPaddingEnd()-clearButtonIcon.getIntrinsicWidth());
+                        if (event.getX() > clearButtonStartPosition) {
+                            isButtonClicked = true;
+                        }
+                        // RTL
+                    } else {
+                        final float clearButtonEndPosition = getPaddingEnd()+clearButtonIcon.getIntrinsicWidth();
+                        if (event.getX() < clearButtonEndPosition) {
+                            isButtonClicked = true;
+                        }
                     }
-                    if (isClearButtonClicked) {
-                        if (event.getAction() == MotionEvent.ACTION_DOWN){
-                            mClearButtonImage = ResourcesCompat.getDrawable
-                                    (getResources(), R.drawable.baseline_close_transparent_24,null);
+
+                    if (isButtonClicked) {
+                        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                            clearButtonIcon = ResourcesCompat.getDrawable(getResources(),
+                                    R.drawable.baseline_close_24, null);
                             showClearButton();
                         }
-                        if (event)
+
+                        if (event.getAction() == MotionEvent.ACTION_UP) {
+                            clearButtonIcon = ResourcesCompat.getDrawable(getResources(),
+                                    R.drawable.baseline_close_transparent_24, null);
+                            showClearButton();
+                            getText().clear();
+                            hideClearButton();
+                            return true;
+                        }
                     }
                 }
                 return false;
@@ -76,13 +94,11 @@ public class EditTextWithClear extends AppCompatEditText {
         init();
     }
 
-    private void showClearButton(){
-        setCompoundDrawablesWithIntrinsicBounds
-                (null, null, mClearButtonImage,null);
+    private void showClearButton() {
+        setCompoundDrawablesRelativeWithIntrinsicBounds(null, null, clearButtonIcon, null);
     }
 
-    private void hideClearButton(){
-        setCompoundDrawablesWithIntrinsicBounds
-                (null, null, null, null);
+    private void hideClearButton() {
+        setCompoundDrawablesRelativeWithIntrinsicBounds(null, null, null, null);
     }
 }
